@@ -169,20 +169,41 @@ def live_options(engine,x,rules,target):
     p=engine.predict(a)
     dist=mixed_distance(a,x,engine.scale)
     valid=(p[:,:5]>=.5).all(axis=1) if target=='joint' else p[:,LABELS.index(target)]>=.5
-    k=rank(np.flatnonzero(valid),dist,c,True)
-    if k is None: return before,'No prediction-flipping candidate within active policy',None,len(a)
-    changes=[(FIELD_LABELS[f],str(x[i]),str(a[k,i])) for i,f in enumerate(ALL) if a[k,i]!=x[i]]
-    notes=[]
-    if a[k,H]!=x[H] and float(a[k,H])-float(x[H])>10: notes.append('Large increase in weekly working hours')
-    if (a[k,[ED,E]]!=x[[ED,E]]).any(): notes.append('Education requires time, resources and access')
-    if (a[k,JOB]!=x[JOB]).any(): notes.append('Employment opportunity and qualifications are unverified')
-    return before,'CAUTION — conditional action' if warning[k] else 'PASS — hard rules satisfied',dict(
-        after=p[k],cost=float(c[k]),edits=int(edits[k]),changes=changes,notes=notes),len(a)
+    ix=np.flatnonzero(valid)
+    if not len(ix): return before,'No prediction-flipping candidate within active policy',None,len(a)
+    # Use distinct observed cost levels, not arbitrary cost multipliers or synthetic candidates.
+    levels=np.unique(c[ix])
+    tiers=[('minimum','Minimum cost',levels[0])]
+    if len(levels)>=3:
+        tiers.append(('medium','Medium cost',levels[len(levels)//2]))
+    if len(levels)>=2:
+        tiers.append(('maximum','Maximum cost',levels[-1]))
+    def describe(key,title,k):
+        changes=[(FIELD_LABELS[f],str(x[i]),str(a[k,i])) for i,f in enumerate(ALL) if a[k,i]!=x[i]]
+        notes=[]
+        if a[k,H]!=x[H] and float(a[k,H])-float(x[H])>10: notes.append('Large increase in weekly working hours')
+        if (a[k,[ED,E]]!=x[[ED,E]]).any(): notes.append('Education requires time, resources and access')
+        if (a[k,JOB]!=x[JOB]).any(): notes.append('Employment opportunity and qualifications are unverified')
+        return dict(tier=key,title=title,after=p[k],cost=float(c[k]),edits=int(edits[k]),
+            changes=changes,notes=notes,caution=bool(warning[k]),
+            target_score=float(p[k,:5].min() if target=='joint' else p[k,LABELS.index(target)]),
+            positive_count=int((p[k,:5]>=.5).sum()),
+            scores=[(MODEL_NAMES[n],float(p[k,j])) for j,n in enumerate(LABELS)])
+    options=[]
+    for key,title,level in tiers:
+        eligible=ix[c[ix]==level]
+        # Same minimum-distance tie-break at every effort level.
+        k=rank(eligible,dist,c,True)
+        options.append(describe(key,title,k))
+    result=dict(options[0],alternatives=options,valid_count=int(len(ix)),cost_levels=int(len(levels)))
+    return before,'CAUTION — conditional action' if result['caution'] else 'PASS — hard rules satisfied',result,len(a)
+
 
 PAGE="""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Counterfactual Research Lab</title>
 <style>
 *{box-sizing:border-box}body{font:15px system-ui;background:#f2f5f9;color:#172b40;margin:0}main{max-width:1100px;margin:auto;padding:28px}h1{font-size:30px;margin:8px 0}h2{font-size:21px;margin:0 0 14px}h3{font-size:16px}p{line-height:1.55}section{background:white;border:1px solid #dbe3ed;border-radius:12px;padding:22px;margin:18px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}.field label{display:block;font-weight:650}input:not([type=checkbox]),select{width:100%;padding:10px;border:1px solid #adbacb;border-radius:6px;background:white;margin:6px 0;font:inherit}small{display:block;color:#52677c;line-height:1.4}button,.linkbtn{font:inherit;font-weight:600;background:#174f78;color:white;border:0;border-radius:6px;padding:11px 16px;cursor:pointer;text-decoration:none;display:inline-block}a{color:#174f78}nav{display:flex;gap:18px;flex-wrap:wrap}summary{cursor:pointer;font-weight:650;margin:12px 0}.rule{border:1px solid #dbe3ed;border-radius:7px;padding:12px;display:flex;gap:9px;align-items:flex-start}.rule input{margin-top:4px}.rule small{margin-top:4px}.notice{border-left:3px solid #b7791f;padding-left:12px;color:#79501c}.muted{color:#52677c}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:14px}td,th{padding:10px;text-align:left;border-bottom:1px solid #e2e8ef}th{background:#f5f8fb}.track{height:9px;background:#e3eaf1;border-radius:5px;min-width:70px;overflow:hidden}.bar{height:100%;background:#2b719e}.positive{background:#147d69}.metric{font-size:25px;font-weight:700}.meta{display:flex;flex-wrap:wrap;gap:25px}.pill{font-size:12px;background:#e9eff5;padding:4px 8px;border-radius:20px}.error{color:#9e2828;font-weight:600}@media print{body{background:white}main{padding:0;max-width:none}#form,header,nav,.no-print{display:none!important}section{border:0;padding:0}details{display:block}table{break-inside:avoid}}
 header{background:#17364f;color:#fff;border-radius:14px;padding:24px 28px;box-shadow:0 5px 20px #17364f14}header .muted,header a{color:#d8e6f2}header .notice{color:#ffdf9c;border-color:#ffdf9c}header h1{letter-spacing:-.7px}section{box-shadow:0 3px 16px #17364f08}.field input:focus,.field select:focus{outline:2px solid #73a8cb;outline-offset:1px}.rule:has(input:checked){background:#f2f7fb;border-color:#a6c4db}.rule input{accent-color:#174f78}.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}.actions button{margin:0}.actions button:hover{filter:brightness(.95)}.pick-pass{background:#e9f6ef;color:#16643f;border:1px solid #83c5a2}.pick-fail{background:#fff0ef;color:#a32c2c;border:1px solid #e5a29c}.outcome{border-radius:10px;padding:19px 22px;border:1px solid;display:flex;align-items:flex-start;gap:16px;margin:0 0 18px}.outcome .symbol{font-size:29px;font-weight:700;line-height:1.1}.outcome h3{font-size:21px;margin:0 0 4px}.outcome p{margin:0}.outcome.green{background:#edf8f1;border-color:#a5d7b7;color:#16643f}.outcome.yellow{background:#fff8e5;border-color:#ead18b;color:#79500c}.outcome.red{background:#fff0ef;border-color:#e7ada8;color:#9e2e2b}.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:18px}.meta>div{border:1px solid #dbe3ed;background:#f8fafc;border-radius:9px;padding:14px}.tag{display:inline-block;padding:3px 8px;border-radius:5px;font-weight:650;font-size:12px}.tag.yes{color:#16643f;background:#e9f6ef}.tag.no{color:#9e2e2b;background:#fff0ef}.bar:not(.positive){background:#b95d56}.sample{padding:10px 14px;background:#eef5fb;border-radius:6px;color:#174f78}.stale{padding:10px;border:1px solid #e6cf9b;background:#fff8e5;color:#79500c;border-radius:6px}button:focus-visible,a:focus-visible{outline:3px solid #73a8cb;outline-offset:3px}@media(max-width:600px){main{padding:12px}section,header{padding:16px}.actions button{width:100%}.outcome{padding:15px}.outcome h3{font-size:18px}}@media print{.outcome,.tag,.bar{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+.policy-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:12px 0 22px}.policy-card{background:#f8fbfe;border:1px solid #d8e3ee;border-radius:9px;padding:13px 14px;min-width:0;break-inside:avoid}.policy-card.enabled{border-color:#9acbb2;background:#f3faf6}.policy-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}.policy-name{font-weight:650;line-height:1.35;overflow-wrap:anywhere}.policy-state{flex-shrink:0;font-size:11px;font-weight:750;white-space:nowrap;border-radius:5px;padding:4px 8px}.state-on{background:#dcefe4;color:#16643f}.state-off{background:#e6ebf0;color:#536476}.policy-desc{font-size:13px;line-height:1.45;color:#52677c}.tier-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px;align-items:start}.tier-card{border:1px solid #d8e3ee;background:#fff;border-radius:10px;padding:16px;min-width:0;break-inside:avoid}.tier-card.minimum{border-top:4px solid #16836b}.tier-card.medium{border-top:4px solid #c29135}.tier-card.maximum{border-top:4px solid #64748b}.tier-card h4{margin:0 0 6px;font-size:17px}.tier-card .cost{font-size:25px;font-weight:750;line-height:1.3}.tier-card .tier-metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}.tier-card .tier-metrics div{background:#f4f7fa;padding:9px;border-radius:6px}.tier-card table{font-size:12px;table-layout:fixed}.tier-card td,.tier-card th{padding:7px;overflow-wrap:anywhere}.tier-card .notice{font-size:13px}.tier-card details{margin-top:10px}.tier-card details summary{font-size:13px}.tier-label{display:inline-block;background:#edf2f7;border-radius:4px;padding:4px 8px;font-size:12px;margin-bottom:9px}.tier-card.minimum .tier-label{background:#e5f4eb;color:#16643f}.comparison-note{font-size:13px;color:#52677c}.policy-summary-title{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.policy-summary-title h3{margin:8px 0}@media print{.tier-grid{display:block}.tier-card{margin:12px 0}.policy-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style></head><body><main>
 <header><p class="muted">CS725 / Research V3</p><h1>Counterfactual Research Lab</h1><p>Adult historical US census benchmark · Five trained classifiers and their soft-voting ensemble</p>
 <nav><a href="#form">Profile input</a>{% if before is not none %}<a href="#profile-report">Current profile report</a>{% endif %}{% if report %}<a href="/report/" target="_blank" rel="noopener">Training &amp; experiment results ↗</a>{% endif %}</nav>
@@ -207,11 +228,28 @@ header{background:#17364f;color:#fff;border-radius:14px;padding:24px 28px;box-sh
 {% if before is not none %}<section id="profile-report"><h2>3. Current profile report</h2><p class="muted">Generated from the submitted values, not the historical experiment dashboard.</p>
 <div id="stale" class="stale no-print" hidden>Inputs or controls have changed. Analyze again to update this report.</div>
 <div class="outcome {{outcome}}" role="status"><span class="symbol" aria-hidden="true">{{'✓' if outcome=='green' else '!' if outcome=='yellow' else '×'}}</span><div><h3>{{outcome_title}}</h3><p>{{outcome_detail}}</p></div></div>
-<div class="meta"><div><small>Ensemble score before</small><div class="metric">{{'%.2f'|format(before[-1]*100)}}%</div></div><div><small>Base models already positive</small><div class="metric">{{positive_count}} / 5</div></div><div><small>Permitted candidates evaluated</small><div class="metric">{{candidate_count}}</div></div>{% if result %}<div><small>Ensemble score after</small><div class="metric">{{'%.2f'|format(result.after[-1]*100)}}%</div></div><div><small>Base models positive after</small><div class="metric">{{after_count}} / 5</div></div>{% endif %}</div>
+<div class="meta"><div><small>Ensemble score before</small><div class="metric">{{'%.2f'|format(before[-1]*100)}}%</div></div><div><small>Base models already positive</small><div class="metric">{{positive_count}} / 5</div></div><div><small>Permitted candidates evaluated</small><div class="metric">{{candidate_count}}</div></div>{% if result %}<div><small>Ensemble after minimum cost</small><div class="metric">{{'%.2f'|format(result.after[-1]*100)}}%</div></div><div><small>Base models positive · minimum cost</small><div class="metric">{{after_count}} / 5</div></div>{% endif %}</div>
 <p><strong>Objective:</strong> {{targets[target]}} · Threshold: 50%.</p><p><strong>Status:</strong> {{status}}</p>
-<div class="tablewrap"><table><thead><tr><th>Model</th><th>Original score</th><th>Original class</th>{% if result %}<th>Modified score</th><th>Modified class</th>{% endif %}</tr></thead><tbody>{% for name,p,q in score_rows %}<tr><td>{{name}}</td><td>{{'%.2f'|format(p*100)}}%<div class="track"><div class="bar {% if p>=0.5 %}positive{% endif %}" style="width:{{p*100}}%"></div></div></td><td><span class="tag {{'yes' if p>=0.5 else 'no'}}">{{'>50K' if p>=0.5 else '≤50K'}}</span></td>{% if result %}<td>{{'%.2f'|format(q*100)}}%<div class="track"><div class="bar {% if q>=0.5 %}positive{% endif %}" style="width:{{q*100}}%"></div></div></td><td><span class="tag {{'yes' if q>=0.5 else 'no'}}">{{'>50K' if q>=0.5 else '≤50K'}}</span></td>{% endif %}</tr>{% endfor %}</tbody></table></div>
-{% if result %}<h3>Minimum-cost counterfactual</h3><p>Illustrative effort: <strong>{{result.cost}} units</strong> · Edited columns: {{result.edits}}.</p><table><tr><th>Feature</th><th>Before</th><th>After</th></tr>{% for f,a,b in result.changes %}<tr><td>{{f}}</td><td>{{a}}</td><td>{{b}}</td></tr>{% endfor %}</table>{% for note in result.notes %}<p class="notice">{{note}}</p>{% endfor %}{% else %}<p class="muted">An already-positive objective needs no change. Otherwise, a missing candidate means none was found in the finite permitted domain; it does not establish real-world impossibility.</p>{% endif %}
-<h3>Active action permissions and restrictions</h3><p>{% for key,(label,desc) in live_rules.items() %}<span class="pill">{{label}}: {{'ON' if key in rules else 'OFF'}}</span> {% endfor %}</p>
+<div class="tablewrap"><table><thead><tr><th>Model</th><th>Original score</th><th>Original class</th>{% if result %}<th>Minimum-cost score</th><th>Minimum-cost class</th>{% endif %}</tr></thead><tbody>{% for name,p,q in score_rows %}<tr><td>{{name}}</td><td>{{'%.2f'|format(p*100)}}%<div class="track"><div class="bar {% if p>=0.5 %}positive{% endif %}" style="width:{{p*100}}%"></div></div></td><td><span class="tag {{'yes' if p>=0.5 else 'no'}}">{{'>50K' if p>=0.5 else '≤50K'}}</span></td>{% if result %}<td>{{'%.2f'|format(q*100)}}%<div class="track"><div class="bar {% if q>=0.5 %}positive{% endif %}" style="width:{{q*100}}%"></div></div></td><td><span class="tag {{'yes' if q>=0.5 else 'no'}}">{{'>50K' if q>=0.5 else '≤50K'}}</span></td>{% endif %}</tr>{% endfor %}</tbody></table></div>
+{% if result %}
+<h3>Compare counterfactual options</h3>
+<p class="comparison-note">{{result.valid_count}} valid candidates across {{result.cost_levels}} distinct effort levels. All displayed options satisfy the selected objective and active hard rules. The medium option uses the middle distinct cost level; maximum cost is a comparison, not a recommendation. More effort need not improve model scores.</p>
+{% if result.cost_levels<3 %}<p class="muted">Only {{result.cost_levels}} distinct valid effort level(s) exist under these controls. Duplicate tiers are omitted.</p>{% endif %}
+<div class="tier-grid">{% for option in result.alternatives %}
+<article class="tier-card {{option.tier}}">
+<span class="tier-label">{{'Lowest declared effort' if option.tier=='minimum' else 'Middle effort level' if option.tier=='medium' else 'Highest permitted effort'}}</span>
+<h4>{{option.title}} counterfactual</h4>
+<div class="cost">{{'%.0f'|format(option.cost)}} <small style="display:inline">units</small></div>
+<div class="tier-metrics"><div><small>Selected objective score{% if target=='joint' %} (weakest model){% endif %}</small><strong>{{'%.2f'|format(option.target_score*100)}}%</strong></div><div><small>Ensemble score</small><strong>{{'%.2f'|format(option.after[-1]*100)}}%</strong></div><div><small>Positive base models</small><strong>{{option.positive_count}} / 5</strong></div><div><small>Edited columns</small><strong>{{option.edits}}</strong></div></div>
+<span class="tag {{'no' if option.caution else 'yes'}}">{{'CAUTION — conditional' if option.caution else 'PASS — hard rules satisfied'}}</span>
+<h4 style="margin-top:15px">Required feature changes</h4>
+<table><thead><tr><th>Feature</th><th>Before</th><th>After</th></tr></thead><tbody>{% for f,a,b in option.changes %}<tr><td>{{f}}</td><td>{{a}}</td><td><strong>{{b}}</strong></td></tr>{% endfor %}</tbody></table>
+{% for note in option.notes %}<p class="notice">{{note}}</p>{% endfor %}
+<details><summary>All six model scores</summary><table><thead><tr><th>Model</th><th>Modified score</th></tr></thead><tbody>{% for name,p in option.scores %}<tr><td>{{name}}</td><td><span class="tag {{'yes' if p>=0.5 else 'no'}}">{{'%.2f'|format(p*100)}}%</span></td></tr>{% endfor %}</tbody></table></details>
+</article>{% endfor %}</div>
+{% else %}<p class="muted">An already-positive objective needs no change. Otherwise, a missing candidate means none was found in the finite permitted domain; it does not establish real-world impossibility.</p>{% endif %}
+<div class="policy-summary-title"><h3>Active policy settings</h3><small>{{rules|length}} of {{live_rules|length}} controls enabled</small></div>
+<div class="policy-summary">{% for key,(label,desc) in live_rules.items() %}<article class="policy-card {{'enabled' if key in rules else ''}}"><div class="policy-head"><span class="policy-name">{{label}}</span><span class="policy-state {{'state-on' if key in rules else 'state-off'}}">{{'ON' if key in rules else 'OFF'}}</span></div><div class="policy-desc">{{desc}}</div></article>{% endfor %}</div>
 <h3>Submitted profile</h3><div class="tablewrap"><table>{% for f,v in submitted %}<tr><th>{{f}}</th><td>{{v}}</td></tr>{% endfor %}</table></div>
 <p class="muted">The ensemble is the mean of five scores. It is not independent evidence. Hard-policy compliance does not verify actual feasibility or causality.</p>
 <button type="button" class="no-print" onclick="window.print()">Print / Save profile report as PDF</button>
@@ -351,7 +389,7 @@ def create_app(engine,root):
                 outcome_detail='The submitted profile already satisfies the selected prediction objective. No counterfactual changes are required.'
             elif result is not None:
                 outcome='yellow'; outcome_title='Possible with counterfactual changes'
-                outcome_detail='A minimum-cost candidate satisfies the active policies and prediction objective. Practical availability of changes is not guaranteed.'
+                outcome_detail='At least one candidate satisfies the active policies and prediction objective. Compare available effort levels below; practical availability of changes is not guaranteed.'
             else:
                 outcome='red'; outcome_title='No solution under current policies'
                 outcome_detail='No candidate in the defined finite action space satisfies the selected objective. This does not imply real-world impossibility.'
@@ -359,6 +397,12 @@ def create_app(engine,root):
                 target=target,active_controls=sorted(rules),status=status,outcome=outcome,held_out_example_id=sample_id,permitted_candidates=count,
                 original_scores=dict(zip(LABELS,before.tolist())),counterfactual=None if not result else
                 dict(scores=dict(zip(LABELS,result['after'].tolist())),cost=result['cost'],changes=result['changes'],notes=result['notes']),
+                valid_candidates=0 if result is None else result['valid_count'],
+                distinct_cost_levels=0 if result is None else result['cost_levels'],
+                counterfactual_options=[] if result is None else [
+                    dict(tier=o['tier'],cost=o['cost'],edits=o['edits'],scores=dict(zip(LABELS,o['after'].tolist())),
+                        changes=o['changes'],notes=o['notes'],caution=o['caution'],target_score=o['target_score'],
+                        positive_base_models=o['positive_count']) for o in result['alternatives']],
                 warning='Model scores only; no verified causal or real-world feasibility claim.')
         return render_template_string(PAGE,groups=groups,edu_map=edu_map,job_map=job_map,education_code=int(x[E]),missing=MISSING,
             live_rules=LIVE_RULES,rules=rules,target=target,targets=targets,before=before,result=result,error=error,status=status,
