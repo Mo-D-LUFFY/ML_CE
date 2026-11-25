@@ -1,0 +1,23 @@
+@"
+# Virtual environments (at any depth)
+.venv/
+venv/
+env/
+ENV/
+*venv*/
+
+# Environment variable / secret files
+.env
+.env.*
+*.env
+
+# Python cache & Jupyter
+__pycache__/
+*.py[cod]
+*.pytest_cache
+.ipynb_checkpoints/
+"@ | Set-Content -Path .gitignore -Encoding utf8
+
+# IDE settings
+.idea/
+.vscode/

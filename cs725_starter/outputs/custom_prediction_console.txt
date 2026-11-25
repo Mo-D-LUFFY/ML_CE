@@ -1,0 +1,104 @@
+{
+  "dataset": "synthetic",
+  "classifier": "logistic_regression",
+  "input_profile": {
+    "age": 40,
+    "education-num": 13,
+    "hours-per-week": 35,
+    "capital-gain": 0,
+    "occupation": "Exec-managerial",
+    "marital-status": "Never-married"
+  },
+  "original_prediction": "<=50K",
+  "probability_gt_50k": 0.34888,
+  "unconstrained": {
+    "original": {
+      "age": 40,
+      "education-num": 13,
+      "hours-per-week": 35,
+      "capital-gain": 0,
+      "occupation": "Exec-managerial",
+      "marital-status": "Never-married"
+    },
+    "original_prediction": "<=50K",
+    "original_probability_gt_50k": 0.34888,
+    "counterfactual": {
+      "age": 40,
+      "education-num": 15,
+      "hours-per-week": 35,
+      "capital-gain": 0,
+      "occupation": "Exec-managerial",
+      "marital-status": "Never-married"
+    },
+    "counterfactual_prediction": ">50K",
+    "counterfactual_probability_gt_50k": 0.50356,
+    "prediction_flipped": true,
+    "generator": "unconstrained",
+    "normalized_change_distance": 0.4,
+    "verdict": "BLOCKED",
+    "hard_constraints_satisfied": false,
+    "warnings": [
+      {
+        "code": "IMMUTABLE_FEATURE_CHANGED",
+        "severity": "BLOCK",
+        "message": "education-num is frozen by our strict policy"
+      }
+    ],
+    "changes": [
+      {
+        "feature": "education-num",
+        "from": 13,
+        "to": 15
+      }
+    ],
+    "change_count": 1,
+    "estimated_cost_units": null
+  },
+  "constrained": {
+    "original": {
+      "age": 40,
+      "education-num": 13,
+      "hours-per-week": 35,
+      "capital-gain": 0,
+      "occupation": "Exec-managerial",
+      "marital-status": "Never-married"
+    },
+    "original_prediction": "<=50K",
+    "original_probability_gt_50k": 0.34888,
+    "counterfactual": {
+      "age": 40,
+      "education-num": 13,
+      "hours-per-week": 46,
+      "capital-gain": 0,
+      "occupation": "Exec-managerial",
+      "marital-status": "Never-married"
+    },
+    "counterfactual_prediction": ">50K",
+    "counterfactual_probability_gt_50k": 0.51252,
+    "prediction_flipped": true,
+    "generator": "constrained",
+    "normalized_change_distance": 0.7333,
+    "verdict": "CAUTION",
+    "hard_constraints_satisfied": true,
+    "warnings": [
+      {
+        "code": "LARGE_SCHEDULE_CHANGE",
+        "severity": "CAUTION",
+        "message": "A large schedule increase may not be available to this person"
+      }
+    ],
+    "changes": [
+      {
+        "feature": "hours-per-week",
+        "from": 35,
+        "to": 46
+      }
+    ],
+    "change_count": 1,
+    "estimated_cost_units": 11.0
+  },
+  "policy_id": "adult_strict_hypothetical_v1",
+  "warning": "The model predicts correlations in historical data. Changing a feature does not establish that real income would increase."
+}
+
+Saved /mnt/data/cs725_starter/outputs/custom_prediction.json

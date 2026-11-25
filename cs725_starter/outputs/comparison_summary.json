@@ -1,0 +1,50 @@
+[
+  {
+    "classifier": "logistic_regression",
+    "generator": "unconstrained",
+    "queries": 100,
+    "flip_success_count": 100,
+    "feasible_flip_count": 0,
+    "flip_success_rate": 1.0,
+    "feasible_valid_coverage": 0.0,
+    "feasibility_among_flips": 0.0,
+    "blocked_candidate_count": 100,
+    "median_cost_for_feasible": null
+  },
+  {
+    "classifier": "logistic_regression",
+    "generator": "constrained",
+    "queries": 100,
+    "flip_success_count": 17,
+    "feasible_flip_count": 17,
+    "flip_success_rate": 0.17,
+    "feasible_valid_coverage": 0.17,
+    "feasibility_among_flips": 1.0,
+    "blocked_candidate_count": 0,
+    "median_cost_for_feasible": 10.0
+  },
+  {
+    "classifier": "random_forest",
+    "generator": "unconstrained",
+    "queries": 100,
+    "flip_success_count": 99,
+    "feasible_flip_count": 7,
+    "flip_success_rate": 0.99,
+    "feasible_valid_coverage": 0.07,
+    "feasibility_among_flips": 0.071,
+    "blocked_candidate_count": 92,
+    "median_cost_for_feasible": 5.0
+  },
+  {
+    "classifier": "random_forest",
+    "generator": "constrained",
+    "queries": 100,
+    "flip_success_count": 14,
+    "feasible_flip_count": 14,
+    "flip_success_rate": 0.14,
+    "feasible_valid_coverage": 0.14,
+    "feasibility_among_flips": 1.0,
+    "blocked_candidate_count": 0,
+    "median_cost_for_feasible": 8.5
+  }
+]

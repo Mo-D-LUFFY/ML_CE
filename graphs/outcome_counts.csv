@@ -1,0 +1,21 @@
+classifier,generator,status,count,queries
+logistic_regression,unconstrained,No returned flip,0,100
+logistic_regression,constrained,No returned flip,83,100
+random_forest,unconstrained,No returned flip,1,100
+random_forest,constrained,No returned flip,86,100
+logistic_regression,unconstrained,Flip + blocked,100,100
+logistic_regression,constrained,Flip + blocked,0,100
+random_forest,unconstrained,Flip + blocked,92,100
+random_forest,constrained,Flip + blocked,0,100
+logistic_regression,unconstrained,Flip + caution,0,100
+logistic_regression,constrained,Flip + caution,7,100
+random_forest,unconstrained,Flip + caution,2,100
+random_forest,constrained,Flip + caution,6,100
+logistic_regression,unconstrained,Flip + pass,0,100
+logistic_regression,constrained,Flip + pass,10,100
+random_forest,unconstrained,Flip + pass,5,100
+random_forest,constrained,Flip + pass,8,100
+logistic_regression,unconstrained,Other outcome,0,100
+logistic_regression,constrained,Other outcome,0,100
+random_forest,unconstrained,Other outcome,0,100
+random_forest,constrained,Other outcome,0,100

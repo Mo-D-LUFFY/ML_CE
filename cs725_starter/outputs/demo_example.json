@@ -1,0 +1,130 @@
+{
+  "query_id": "1261",
+  "dataset": "synthetic",
+  "is_synthetic": true,
+  "classifier": "logistic_regression",
+  "original": {
+    "age": 40,
+    "education-num": 13,
+    "hours-per-week": 35,
+    "capital-gain": 0,
+    "occupation": "Exec-managerial",
+    "marital-status": "Never-married"
+  },
+  "unconstrained_counterfactual": {
+    "original": {
+      "age": 40,
+      "education-num": 13,
+      "hours-per-week": 35,
+      "capital-gain": 0,
+      "occupation": "Exec-managerial",
+      "marital-status": "Never-married"
+    },
+    "original_prediction": "<=50K",
+    "original_probability_gt_50k": 0.34888,
+    "counterfactual": {
+      "age": 40,
+      "education-num": 15,
+      "hours-per-week": 35,
+      "capital-gain": 0,
+      "occupation": "Exec-managerial",
+      "marital-status": "Never-married"
+    },
+    "counterfactual_prediction": ">50K",
+    "counterfactual_probability_gt_50k": 0.50356,
+    "prediction_flipped": true,
+    "generator": "unconstrained",
+    "normalized_change_distance": 0.4,
+    "verdict": "BLOCKED",
+    "hard_constraints_satisfied": false,
+    "warnings": [
+      {
+        "code": "IMMUTABLE_FEATURE_CHANGED",
+        "severity": "BLOCK",
+        "message": "education-num is frozen by our strict policy"
+      }
+    ],
+    "changes": [
+      {
+        "feature": "education-num",
+        "from": 13,
+        "to": 15
+      }
+    ],
+    "change_count": 1,
+    "estimated_cost_units": null
+  },
+  "constrained_counterfactual": {
+    "original": {
+      "age": 40,
+      "education-num": 13,
+      "hours-per-week": 35,
+      "capital-gain": 0,
+      "occupation": "Exec-managerial",
+      "marital-status": "Never-married"
+    },
+    "original_prediction": "<=50K",
+    "original_probability_gt_50k": 0.34888,
+    "counterfactual": {
+      "age": 40,
+      "education-num": 13,
+      "hours-per-week": 46,
+      "capital-gain": 0,
+      "occupation": "Exec-managerial",
+      "marital-status": "Never-married"
+    },
+    "counterfactual_prediction": ">50K",
+    "counterfactual_probability_gt_50k": 0.51252,
+    "prediction_flipped": true,
+    "generator": "constrained",
+    "normalized_change_distance": 0.7333,
+    "verdict": "CAUTION",
+    "hard_constraints_satisfied": true,
+    "warnings": [
+      {
+        "code": "LARGE_SCHEDULE_CHANGE",
+        "severity": "CAUTION",
+        "message": "A large schedule increase may not be available to this person"
+      }
+    ],
+    "changes": [
+      {
+        "feature": "hours-per-week",
+        "from": 35,
+        "to": 46
+      }
+    ],
+    "change_count": 1,
+    "estimated_cost_units": 11.0
+  },
+  "manual_age_change_warning": {
+    "proposed": {
+      "age": 60,
+      "education-num": 13,
+      "hours-per-week": 35,
+      "capital-gain": 0,
+      "occupation": "Exec-managerial",
+      "marital-status": "Never-married"
+    },
+    "probability_gt_50k": 0.53564,
+    "flips_prediction": true,
+    "verdict": "BLOCKED",
+    "hard_constraints_satisfied": false,
+    "warnings": [
+      {
+        "code": "IMMUTABLE_FEATURE_CHANGED",
+        "severity": "BLOCK",
+        "message": "age is frozen by our strict policy"
+      }
+    ],
+    "changes": [
+      {
+        "feature": "age",
+        "from": 40,
+        "to": 60
+      }
+    ],
+    "change_count": 1,
+    "estimated_cost_units": null
+  }
+}

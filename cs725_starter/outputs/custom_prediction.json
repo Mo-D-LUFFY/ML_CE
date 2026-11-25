@@ -1,0 +1,60 @@
+{
+  "dataset": "synthetic",
+  "classifier": "logistic_regression",
+  "input_profile": {
+    "age": 50,
+    "education-num": 7,
+    "hours-per-week": 35,
+    "capital-gain": 0,
+    "occupation": "Exec-managerial",
+    "marital-status": "Never-married"
+  },
+  "original_prediction": "<=50K",
+  "probability_gt_50k": 0.10384,
+  "unconstrained": {
+    "original": {
+      "age": 50,
+      "education-num": 7,
+      "hours-per-week": 35,
+      "capital-gain": 0,
+      "occupation": "Exec-managerial",
+      "marital-status": "Never-married"
+    },
+    "original_prediction": "<=50K",
+    "original_probability_gt_50k": 0.10384,
+    "counterfactual": {
+      "age": 50,
+      "education-num": 7,
+      "hours-per-week": 35,
+      "capital-gain": 10000,
+      "occupation": "Exec-managerial",
+      "marital-status": "Never-married"
+    },
+    "counterfactual_prediction": ">50K",
+    "counterfactual_probability_gt_50k": 0.54389,
+    "prediction_flipped": true,
+    "generator": "unconstrained",
+    "normalized_change_distance": 1.0,
+    "verdict": "BLOCKED",
+    "hard_constraints_satisfied": false,
+    "warnings": [
+      {
+        "code": "IMMUTABLE_FEATURE_CHANGED",
+        "severity": "BLOCK",
+        "message": "capital-gain is frozen by our strict policy"
+      }
+    ],
+    "changes": [
+      {
+        "feature": "capital-gain",
+        "from": 0,
+        "to": 10000
+      }
+    ],
+    "change_count": 1,
+    "estimated_cost_units": null
+  },
+  "constrained": null,
+  "policy_id": "adult_strict_hypothetical_v1",
+  "warning": "The model predicts correlations in historical data. Changing a feature does not establish that real income would increase."
+}

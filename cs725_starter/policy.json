@@ -1,0 +1,26 @@
+{
+  "policy_id": "adult_strict_hypothetical_v1",
+  "horizon": "Illustrative prospective change in weekly work schedule, not real income advice",
+  "target_prediction": ">50K",
+  "immutable_in_this_experiment": ["age", "education-num", "marital-status", "capital-gain"],
+  "conditionally_actionable": ["occupation"],
+  "actionable": {
+    "hours-per-week": {
+      "type": "integer",
+      "allowed_direction": "increase_only",
+      "allowed_range_for_changed_value": [1, 65],
+      "maximum_increase": 15,
+      "caution_if_increase_greater_than": 10
+    }
+  },
+  "occupation_change": {
+    "allowed_only_with_explicit_access_flag": true,
+    "always_add_caution": true
+  },
+  "cost_assumptions": {
+    "each_additional_weekly_hour": 1.0,
+    "occupation_change": 20.0,
+    "units": "illustrative, not currency or a validated human burden"
+  },
+  "warning": "The model predicts correlations in historical data. Changing a feature does not establish that real income would increase."
+}

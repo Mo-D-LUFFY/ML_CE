@@ -1,0 +1,76 @@
+{
+  "source_dataset": "synthetic",
+  "is_synthetic": true,
+  "figures": [
+    {
+      "chart": "01_model_metrics",
+      "caption": "Held-out predictive performance",
+      "formats": [
+        "png",
+        "svg"
+      ]
+    },
+    {
+      "chart": "02_confusion_logistic_regression",
+      "caption": "Confusion matrix for Logistic Regression",
+      "formats": [
+        "png",
+        "svg"
+      ]
+    },
+    {
+      "chart": "03_confusion_random_forest",
+      "caption": "Confusion matrix for Random Forest",
+      "formats": [
+        "png",
+        "svg"
+      ]
+    },
+    {
+      "chart": "04_flip_vs_feasible",
+      "caption": "Predicted class flip versus hard-constraint passing",
+      "formats": [
+        "png",
+        "svg"
+      ]
+    },
+    {
+      "chart": "05_query_verdicts",
+      "caption": "Status of every counterfactual query",
+      "formats": [
+        "png",
+        "svg"
+      ]
+    },
+    {
+      "chart": "06_feasible_effort",
+      "caption": "Distribution of estimated effort for feasible flips",
+      "formats": [
+        "png",
+        "svg"
+      ]
+    },
+    {
+      "chart": "07_warning_codes",
+      "caption": "Frequency of validator warning codes",
+      "formats": [
+        "png",
+        "svg"
+      ]
+    },
+    {
+      "chart": "08_before_after_example",
+      "caption": "Before-and-after scores for one real generated test case",
+      "formats": [
+        "png",
+        "svg"
+      ]
+    }
+  ],
+  "limitations": [
+    "Counterfactual prediction flips do not establish causal effects.",
+    "Starter unconstrained and constrained generators have unequal candidate/search budgets.",
+    "Effort is a made-up policy score, not financial cost.",
+    "Failed search does not prove no globally feasible counterfactual exists."
+  ]
+}

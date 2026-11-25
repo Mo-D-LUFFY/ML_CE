@@ -1,0 +1,45 @@
+{
+  "warning": "Synthetic teaching example, not real student advice",
+  "original": {
+    "study_hours": 2,
+    "extra_support": 0,
+    "earlier_grade": 3
+  },
+  "original_score": 10,
+  "original_prediction": 0,
+  "accepted_counterfactuals": [
+    {
+      "candidate": {
+        "study_hours": 4,
+        "extra_support": 0,
+        "earlier_grade": 3
+      },
+      "score": 14,
+      "predicted_label": 1,
+      "illustrative_cost_units": 2,
+      "feasible": true
+    },
+    {
+      "candidate": {
+        "study_hours": 3,
+        "extra_support": 1,
+        "earlier_grade": 3
+      },
+      "score": 15,
+      "predicted_label": 1,
+      "illustrative_cost_units": 4,
+      "feasible": true
+    },
+    {
+      "candidate": {
+        "study_hours": 4,
+        "extra_support": 1,
+        "earlier_grade": 3
+      },
+      "score": 17,
+      "predicted_label": 1,
+      "illustrative_cost_units": 5,
+      "feasible": true
+    }
+  ]
+}

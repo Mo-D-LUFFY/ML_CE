@@ -1,0 +1,11 @@
+{
+  "dataset": "synthetic",
+  "is_synthetic": true,
+  "n_train": 4500,
+  "n_test": 1500,
+  "policy_id": "adult_strict_hypothetical_v1",
+  "target": "1=>50K, 0=<=50K",
+  "random_seed": 42,
+  "interpretation_warning": "The model predicts correlations in historical data. Changing a feature does not establish that real income would increase.",
+  "generation_note": "Small auditable grid search, NOT DiCE or globally optimal counterfactuals"
+}
